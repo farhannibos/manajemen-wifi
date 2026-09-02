@@ -15,6 +15,90 @@ import {
   IconWifi,
 } from '../components/icons'
 
+// Kartu invoice ini di-capture jadi gambar/PDF lewat html2canvas, yang
+// tidak selalu bisa membaca stylesheet Tailwind v4 (pakai @layer) dengan
+// benar di semua browser/hosting. Supaya hasil capture selalu konsisten,
+// SEMUA elemen di dalam kartu ini pakai inline style, bukan className.
+const s = {
+  card: {
+    background: '#ffffff',
+    borderRadius: 16,
+    overflow: 'hidden',
+    border: '1px solid #f1f5f9',
+    position: 'relative',
+    fontFamily: "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif",
+  },
+  header: {
+    background: 'linear-gradient(to right, #4f46e5, #7c3aed)',
+    color: '#ffffff',
+    padding: '16px 20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    background: 'rgba(255,255,255,0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    color: '#ffffff',
+  },
+  body: { padding: '16px 20px', position: 'relative' },
+  labelKecil: { fontSize: 12, color: '#94a3b8', margin: 0 },
+  nomorInvoice: {
+    fontFamily: 'ui-monospace, monospace',
+    fontWeight: 600,
+    color: '#1e293b',
+    margin: '2px 0 0',
+    paddingRight: 84,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    margin: '0 0 6px',
+  },
+  namaBold: { fontWeight: 600, color: '#1e293b', margin: 0, fontSize: 15 },
+  teksAbu: { fontSize: 13, color: '#64748b', margin: '2px 0 0' },
+  divider: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #f1f5f9' },
+  dividerDashed: { marginTop: 16, paddingTop: 16, borderTop: '1px dashed #e2e8f0' },
+  totalBox: {
+    marginTop: 16,
+    borderRadius: 12,
+    background: '#eef2ff',
+    padding: '14px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  statusBox: (warna) => ({
+    borderRadius: 12,
+    padding: '12px 14px',
+    fontSize: 13,
+    marginTop: 12,
+    background: warna.bg,
+    color: warna.text,
+  }),
+  footer: {
+    padding: '14px 20px',
+    borderTop: '1px solid #f1f5f9',
+    textAlign: 'center',
+    background: '#fafbfc',
+  },
+}
+
+const WARNA_STATUS = {
+  lunas: { bg: '#ecfdf5', text: '#047857' },
+  terlambat: { bg: '#fef2f2', text: '#b91c1c' },
+  belum: { bg: '#fffbeb', text: '#b45309' },
+}
+
 export default function InvoicePage() {
   const { tagihanId } = useParams()
   const navigate = useNavigate()
@@ -114,6 +198,8 @@ export default function InvoicePage() {
   const hariIni = new Date().toISOString().slice(0, 10)
   const terlambat = !lunas && tagihan.tanggal_jatuh_tempo < hariIni
   const labelStatus = lunas ? 'LUNAS' : terlambat ? 'TERLAMBAT' : 'BELUM LUNAS'
+  const warnaStatus = lunas ? WARNA_STATUS.lunas : terlambat ? WARNA_STATUS.terlambat : WARNA_STATUS.belum
+  const warnaStempel = lunas ? '#10b981' : '#ef4444'
 
   const teksWA = [
     `Halo ${tagihan.pelanggan?.nama}, berikut invoice tagihan internet Anda:`,
@@ -142,125 +228,184 @@ export default function InvoicePage() {
         Kembali
       </button>
 
-      {/* Kartu invoice — ini yang di-render jadi gambar/PDF */}
-      <div
-        ref={invoiceRef}
-        className="bg-white rounded-2xl overflow-hidden border border-slate-100 relative"
-      >
-        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-4 flex items-center gap-2.5">
-          <span className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+      {/* Kartu invoice — ini yang di-render jadi gambar/PDF. Semua inline style. */}
+      <div ref={invoiceRef} style={s.card}>
+        <div style={s.header}>
+          <span style={s.headerBadge}>
             <IconWifi className="w-5 h-5" />
           </span>
           <div>
-            <p className="font-bold leading-tight">Manajemen WiFi</p>
-            <p className="text-xs text-indigo-100 leading-tight">RT/RW Net</p>
+            <p style={{ fontWeight: 700, lineHeight: 1.2, margin: 0 }}>Manajemen WiFi</p>
+            <p style={{ fontSize: 12, color: '#e0e7ff', lineHeight: 1.2, margin: 0 }}>RT/RW Net</p>
           </div>
         </div>
 
-        <div className="px-5 py-4 relative">
+        <div style={s.body}>
           <div
-            className={`absolute top-4 right-5 w-[70px] h-[70px] rounded-full border-2 flex items-center justify-center rotate-[-14deg] opacity-90 select-none ${
-              lunas ? 'border-emerald-500' : 'border-red-500'
-            }`}
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 20,
+              width: 70,
+              height: 70,
+              borderRadius: '50%',
+              border: `2px solid ${warnaStempel}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: 'rotate(-14deg)',
+              opacity: 0.9,
+            }}
           >
             <div
-              className={`w-[58px] h-[58px] rounded-full border border-dashed flex items-center justify-center ${
-                lunas ? 'border-emerald-500' : 'border-red-500'
-              }`}
+              style={{
+                width: 58,
+                height: 58,
+                borderRadius: '50%',
+                border: `1px dashed ${warnaStempel}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
               <span
-                className={`font-extrabold text-center leading-[11px] tracking-wide whitespace-pre-line ${
-                  lunas ? 'text-emerald-600 text-[11px]' : 'text-red-600 text-[8px]'
-                }`}
+                style={{
+                  fontWeight: 800,
+                  textAlign: 'center',
+                  lineHeight: '11px',
+                  letterSpacing: 0.5,
+                  whiteSpace: 'pre-line',
+                  color: warnaStempel,
+                  fontSize: lunas ? 11 : terlambat ? 9 : 8,
+                }}
               >
                 {lunas ? 'LUNAS' : terlambat ? 'TERLAMBAT' : 'BELUM\nLUNAS'}
               </span>
             </div>
           </div>
 
-          <p className="text-xs text-slate-400">Nomor Invoice</p>
-          <p className="font-mono font-semibold text-slate-800 pr-20">{nomorInvoice(tagihan)}</p>
-          <p className="text-xs text-slate-400 mt-1">Dicetak {formatTanggal(dicetak)}</p>
+          <p style={s.labelKecil}>Nomor Invoice</p>
+          <p style={s.nomorInvoice}>{nomorInvoice(tagihan)}</p>
+          <p style={{ ...s.labelKecil, marginTop: 4 }}>Dicetak {formatTanggal(dicetak)}</p>
 
-          <div className="mt-4 pt-4 border-t border-slate-100">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
-              Ditagihkan Kepada
-            </p>
-            <p className="font-semibold text-slate-800">{tagihan.pelanggan?.nama}</p>
-            <p className="text-sm text-slate-500">{tagihan.pelanggan?.no_hp}</p>
-            {tagihan.pelanggan?.alamat && (
-              <p className="text-sm text-slate-500">{tagihan.pelanggan.alamat}</p>
-            )}
+          <div style={s.divider}>
+            <p style={s.sectionTitle}>Ditagihkan Kepada</p>
+            <p style={s.namaBold}>{tagihan.pelanggan?.nama}</p>
+            <p style={s.teksAbu}>{tagihan.pelanggan?.no_hp}</p>
+            {tagihan.pelanggan?.alamat && <p style={s.teksAbu}>{tagihan.pelanggan.alamat}</p>}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-dashed border-slate-200">
-            <div className="flex justify-between items-start gap-3 pb-3 border-b border-slate-100">
-              <div className="flex items-start gap-2 min-w-0">
-                <span className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+          <div style={s.dividerDashed}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                gap: 12,
+                paddingBottom: 12,
+                borderBottom: '1px solid #f1f5f9',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, minWidth: 0 }}>
+                <span
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: '#eef2ff',
+                    color: '#4f46e5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    marginTop: 2,
+                  }}
+                >
                   <IconWifi className="w-4 h-4" />
                 </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-800">
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', margin: 0 }}>
                     Langganan {tagihan.pelanggan?.paket?.nama_paket}
                   </p>
-                  <p className="text-xs text-slate-400">{tagihan.pelanggan?.paket?.kecepatan}</p>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                  <p style={{ fontSize: 12, color: '#94a3b8', margin: '1px 0 0' }}>
+                    {tagihan.pelanggan?.paket?.kecepatan}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      color: '#94a3b8',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginTop: 4,
+                    }}
+                  >
                     <IconCalendar className="w-3 h-3" />
-                    <span className="capitalize">{namaBulan(tagihan.periode)}</span>
+                    <span style={{ textTransform: 'capitalize' }}>{namaBulan(tagihan.periode)}</span>
                   </p>
                 </div>
               </div>
-              <span className="text-sm font-semibold text-slate-800 shrink-0">
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#1e293b', flexShrink: 0 }}>
                 {formatRupiah(tagihan.jumlah_tagihan)}
               </span>
             </div>
 
-            <div className="flex justify-between text-xs text-slate-400 pt-3">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: 12,
+                color: '#94a3b8',
+                paddingTop: 12,
+              }}
+            >
               <span>Tanggal Terbit</span>
               <span>{formatTanggal(tagihan.tanggal_terbit)}</span>
             </div>
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: 12,
+                color: '#94a3b8',
+                marginTop: 4,
+              }}
+            >
               <span>Jatuh Tempo</span>
-              <span className={terlambat ? 'text-red-500 font-medium' : ''}>
+              <span style={terlambat ? { color: '#ef4444', fontWeight: 600 } : undefined}>
                 {formatTanggal(tagihan.tanggal_jatuh_tempo)}
               </span>
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl bg-indigo-50/70 px-4 py-3.5 flex items-center justify-between">
-            <span className="text-sm text-slate-600 font-medium">Total Tagihan</span>
-            <span className="text-2xl font-extrabold text-indigo-700">
+          <div style={s.totalBox}>
+            <span style={{ fontSize: 14, color: '#475569', fontWeight: 500 }}>Total Tagihan</span>
+            <span style={{ fontSize: 24, fontWeight: 800, color: '#4338ca' }}>
               {formatRupiah(tagihan.jumlah_tagihan)}
             </span>
           </div>
 
-          <div
-            className={`rounded-xl px-3.5 py-3 text-sm mt-3 ${
-              lunas
-                ? 'bg-emerald-50 text-emerald-700'
-                : terlambat
-                  ? 'bg-red-50 text-red-700'
-                  : 'bg-amber-50 text-amber-700'
-            }`}
-          >
+          <div style={s.statusBox(warnaStatus)}>
             {lunas ? (
               <>
-                <p className="font-semibold">Sudah Dibayar</p>
+                <p style={{ fontWeight: 600, margin: 0 }}>Sudah Dibayar</p>
                 {pembayaran && (
-                  <p className="text-xs mt-0.5 opacity-80">
+                  <p style={{ fontSize: 12, marginTop: 2, opacity: 0.85 }}>
                     {formatTanggal(pembayaran.tanggal_bayar)} &middot; {pembayaran.metode ?? 'tunai'}
                   </p>
                 )}
               </>
             ) : (
-              <p className="font-semibold">{terlambat ? 'Pembayaran Terlambat' : 'Belum Dibayar'}</p>
+              <p style={{ fontWeight: 600, margin: 0 }}>
+                {terlambat ? 'Pembayaran Terlambat' : 'Belum Dibayar'}
+              </p>
             )}
           </div>
         </div>
 
-        <div className="px-5 py-3.5 border-t border-slate-100 text-center bg-slate-50/50">
-          <p className="text-xs text-slate-400">Manajemen WiFi &middot; RT/RW Net</p>
-          <p className="text-[11px] text-slate-300 mt-0.5">
+        <div style={s.footer}>
+          <p style={{ fontSize: 12, color: '#94a3b8', margin: 0 }}>Manajemen WiFi &middot; RT/RW Net</p>
+          <p style={{ fontSize: 11, color: '#cbd5e1', margin: '2px 0 0' }}>
             Invoice ini dibuat otomatis oleh sistem dan sah tanpa tanda tangan
           </p>
         </div>
