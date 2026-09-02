@@ -4,6 +4,7 @@ import { supabase } from './lib/supabaseClient'
 import BottomNav from './components/BottomNav'
 import { IconLogout, IconWifi } from './components/icons'
 import InvoicePage from './pages/InvoicePage'
+import LaporanPage from './pages/LaporanPage'
 import LoginPage from './pages/LoginPage'
 import PaketPage from './pages/PaketPage'
 import PelangganPage from './pages/PelangganPage'
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="/pelanggan/:id" element={<PelangganDetailPage />} />
           <Route path="/invoice/:tagihanId" element={<InvoicePage />} />
           <Route path="/paket" element={<PaketPage />} />
+          <Route path="/laporan" element={<LaporanPage />} />
           <Route path="*" element={<Navigate to="/tagihan" replace />} />
         </Routes>
       </main>

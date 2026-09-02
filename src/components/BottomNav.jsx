@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { IconReceipt, IconUsers, IconWifi } from './icons'
+import { IconBarChart, IconReceipt, IconUsers, IconWifi } from './icons'
 
 const MENU = [
   { to: '/tagihan', label: 'Tagihan', Icon: IconReceipt },
   { to: '/pelanggan', label: 'Pelanggan', Icon: IconUsers },
   { to: '/paket', label: 'Paket', Icon: IconWifi },
+  { to: '/laporan', label: 'Laporan', Icon: IconBarChart },
 ]
 
 export default function BottomNav() {
