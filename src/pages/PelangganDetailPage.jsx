@@ -16,6 +16,7 @@ import {
   IconMessageCircle,
   IconPencil,
   IconPhone,
+  IconPlus,
   IconReceipt,
   IconTrash,
   IconUnlock,
@@ -54,6 +55,7 @@ export default function PelangganDetailPage() {
   const [modeEdit, setModeEdit] = useState(false)
   const [form, setForm] = useState(null)
   const [memproses, setMemproses] = useState(false)
+  const [memprosesTagihan, setMemprosesTagihan] = useState(false)
   const [error, setError] = useState('')
 
   async function muatData() {
@@ -136,6 +138,26 @@ export default function PelangganDetailPage() {
 
     if (error) {
       alert('Gagal ubah status: ' + error.message)
+      return
+    }
+
+    muatData()
+  }
+
+  async function buatTagihanManual() {
+    if (!confirm(`Buat tagihan bulan ini untuk ${pelanggan.nama}?`)) return
+    setMemprosesTagihan(true)
+
+    const { error } = await supabase.rpc('buat_tagihan_manual', { p_pelanggan_id: id })
+
+    setMemprosesTagihan(false)
+
+    if (error) {
+      alert(
+        error.message.includes('sudah ada')
+          ? 'Tagihan bulan ini untuk pelanggan ini sudah ada.'
+          : 'Gagal buat tagihan: ' + error.message,
+      )
       return
     }
 
@@ -274,7 +296,18 @@ export default function PelangganDetailPage() {
       </div>
 
       <div className={`${CARD_CLASS} p-5`}>
-        <h2 className="text-sm font-bold text-slate-700 mb-3">Riwayat Tagihan</h2>
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <h2 className="text-sm font-bold text-slate-700">Riwayat Tagihan</h2>
+          <Button
+            variant="outline"
+            onClick={buatTagihanManual}
+            disabled={memprosesTagihan}
+            icon={<IconPlus className="w-3.5 h-3.5" />}
+            className="min-h-9 px-3 text-xs shrink-0"
+          >
+            {memprosesTagihan ? 'Memproses...' : 'Buat Tagihan Bulan Ini'}
+          </Button>
+        </div>
         <div className="space-y-1">
           {riwayatTagihan.map((t) => (
             <Link
