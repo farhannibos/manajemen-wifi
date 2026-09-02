@@ -22,6 +22,13 @@ export function nomorWA(noHp) {
   return '62' + digit
 }
 
+export function nomorInvoice(tagihan) {
+  const kode = tagihan.id.replace(/-/g, '').slice(0, 8).toUpperCase()
+  const p = new Date(tagihan.periode)
+  const ym = `${p.getFullYear()}${String(p.getMonth() + 1).padStart(2, '0')}`
+  return `INV-${ym}-${kode}`
+}
+
 export function namaBulan(tanggal) {
   if (!tanggal) return '-'
   return new Date(tanggal).toLocaleDateString('id-ID', {

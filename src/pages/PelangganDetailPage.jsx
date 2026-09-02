@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { formatRupiah, formatTanggal, namaBulan, nomorWA } from '../lib/format'
 import { CARD_CLASS, INPUT_CLASS, LABEL_CLASS } from '../lib/ui'
@@ -9,6 +9,7 @@ import Skeleton from '../components/Skeleton'
 import EmptyState from '../components/EmptyState'
 import {
   IconArrowLeft,
+  IconChevronRight,
   IconHistory,
   IconLock,
   IconMapPin,
@@ -276,13 +277,20 @@ export default function PelangganDetailPage() {
         <h2 className="text-sm font-bold text-slate-700 mb-3">Riwayat Tagihan</h2>
         <div className="space-y-1">
           {riwayatTagihan.map((t) => (
-            <div key={t.id} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
+            <Link
+              key={t.id}
+              to={`/invoice/${t.id}`}
+              className="flex justify-between items-center py-2 border-b border-slate-50 last:border-0 active:bg-slate-50 -mx-1 px-1 rounded-lg"
+            >
               <div>
                 <p className="text-sm text-slate-700 capitalize font-medium">{namaBulan(t.periode)}</p>
                 <p className="text-xs text-slate-400">{formatRupiah(t.jumlah_tagihan)}</p>
               </div>
-              <StatusBadge status={t.status} />
-            </div>
+              <div className="flex items-center gap-1.5">
+                <StatusBadge status={t.status} />
+                <IconChevronRight className="w-4 h-4 text-slate-300" />
+              </div>
+            </Link>
           ))}
           {riwayatTagihan.length === 0 && (
             <EmptyState

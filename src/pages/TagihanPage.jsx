@@ -117,17 +117,26 @@ export default function TagihanPage() {
                   <StatusBadge status={status} />
                 </div>
 
-                {t.status === 'belum_lunas' && (
-                  <Button
-                    variant="success"
-                    onClick={() => tandaiLunas(t)}
-                    disabled={memproses === t.id}
-                    icon={<IconCheck className="w-4 h-4" />}
-                    className="mt-3 w-full"
+                <div className="flex gap-2 mt-3">
+                  <Link
+                    to={`/invoice/${t.id}`}
+                    className="inline-flex items-center justify-center gap-1.5 min-h-11 px-4 rounded-xl text-sm font-semibold bg-white text-slate-700 border border-slate-200 active:bg-slate-50 active:scale-[0.97] transition-all duration-150 flex-1"
                   >
-                    {memproses === t.id ? 'Memproses...' : 'Tandai Lunas'}
-                  </Button>
-                )}
+                    <IconReceipt className="w-4 h-4" />
+                    Invoice
+                  </Link>
+                  {t.status === 'belum_lunas' && (
+                    <Button
+                      variant="success"
+                      onClick={() => tandaiLunas(t)}
+                      disabled={memproses === t.id}
+                      icon={<IconCheck className="w-4 h-4" />}
+                      className="flex-1"
+                    >
+                      {memproses === t.id ? 'Memproses...' : 'Tandai Lunas'}
+                    </Button>
+                  )}
+                </div>
               </div>
             )
           })}
